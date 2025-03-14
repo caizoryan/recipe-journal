@@ -1,4 +1,4 @@
-import { mounted, mut, render, html, sig, mem, eff_on } from "/lib/solid/monke.js"
+import { mounted, mut, render, html, sig, mem, eff_on } from "./lib/solid/monke.js"
 import {
   model,
   markdown,
@@ -10,12 +10,12 @@ import {
   commands,
   keymap,
   autocomplete,
-} from "/lib/prosemirror/dist/main.js"
+} from "./lib/prosemirror/dist/main.js"
 
 
 import {
   floating
-} from "/lib/floating-ui/dist/main.js"
+} from "./lib/floating-ui/dist/main.js"
 
 let compute_position = floating.computePosition
 let M = mut({})
@@ -519,7 +519,7 @@ const add_dish = () => {
 }
 
 /**
-* @returns {(Promise<import("/lib/arena.js").Block | Undefined>)}
+* @returns {(Promise<import("./lib/arena.js").Block | Undefined>)}
 */
 const add_ingredient = async (str) => {
   let b
@@ -559,7 +559,7 @@ const save_block = (content, block) => {
 
 /**
 * @description will create an ingredient block in MAIN_CHANNEL
-* @returns {Promise<import("/lib/arena.js").Block>}
+* @returns {Promise<import("./lib/arena.js").Block>}
 */
 const create_dish_block = async () => {
   let body = {
@@ -932,7 +932,7 @@ let editable = mem(() => (selected_block()?.user?.slug == logged_as() || !select
 // ARENA SIDE
 // ---------------
 
-import { Arena } from "/lib/arena.js"
+import { Arena } from "./lib/arena.js"
 const MAIN_CHANNEL = "recipe-journals"
 
 function arena() {
