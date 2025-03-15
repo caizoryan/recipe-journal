@@ -117,8 +117,7 @@ button {
 
 .main {
   display: grid;
-  width: 100vw;
-  max-width: 1400px;
+  width: calc(100vw - 2em);
   margin: 0 auto;
   grid-template-rows: 8% 85%;
   padding: 1em;
@@ -128,9 +127,8 @@ button {
 }
 
 .dual {
+  width: calc(100% - 2em);
   display: grid;
-  width: 100vw;
-  max-width: 1400px;
   height: 100%;
   margin: 0 auto;
   grid-template-columns: 1fr 1fr;
