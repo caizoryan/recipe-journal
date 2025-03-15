@@ -1108,7 +1108,7 @@ function top_bar() {
    .top-bar
      .notify -- !()!
      .info -- [${() => unsaved() ? "unsaved" : "saved"}]
-     .buttons -- (save)
+     button [onclick=${() => save_block(current_text(), selected_block())}] -- (save)
   `
 }
 
@@ -1128,6 +1128,7 @@ function setMarkLink(href, state, dispatch) {
 function autocomplete_search() {
   const filter = sig("")
   const action = sig("ingredients")
+  //const view_ref
   const _show = sig(false)
   const x = sig(0)
   const y = sig(0)
@@ -1220,6 +1221,7 @@ function autocomplete_search() {
     left: ${x() + w}px;
     background: white;
     border: 1px solid black;
+    overflow-y: scroll;
     padding: .5em;
     z-index: 99;
     
@@ -1249,7 +1251,10 @@ function autocomplete_search() {
     return html`
       .ingredient-results [style=${style}]
         each of ${filtered} as ${(e, i) => html`
-           div [class=${mem(() => `line ${i() == cursor() ? "selected-result" : ""}`)}]
+           div [
+             class=${mem(() => `line ${i() == cursor() ? "selected-result" : ""}`)}
+             style=cursor:pointer;
+           ]
             span -- ${img(e)}
             p  -- ${line(e)} 
         `}
@@ -1294,6 +1299,8 @@ function handle_ingredient_search(action) {
     })
 
     complete.show()
+    // complete.view_ref(action.view)
+    // complete.range_ref(action.view)
     return true
   }
 
