@@ -381,10 +381,15 @@ M.style = style
 const first_line = (str) => str ? str.split(`\n`).shift() : "undefined"
 const refresh = (slug) => client.channel(slug).hack_refresh()
 
+const selected_ingredient_can_make = (block) => {
+  if (selected_block()?.title == "ingredient") {
+    if (connections()[selected_block().id].find((b) => b.id == block.id)) return true
+  }
+  else false
+}
 
 const selected_dish_has_me = (block) => {
   if (selected_block()?.title == "dish") {
-    console.log(block.content, connections()[block.id])
     if (connections()[block.id].find((b) => b.id == selected_block()?.id)) return true
   }
   else false
@@ -740,6 +745,16 @@ let connections = mem(() => {
   return map
 })
 
+let active_dish = mem(() => {
+  let a = dishes()?.filter((b) => selected_ingredient_can_make(b))
+  return a ? a : []
+})
+
+let inactive_dish = mem(() => {
+  let a = dishes()?.filter((b) => !selected_ingredient_can_make(b))
+  return a ? a : []
+})
+
 let active_ingredients = mem(() => {
   let a = ingredients()?.filter((b) => selected_dish_has_me(b))
   return a ? a : []
@@ -900,8 +915,7 @@ function arena() {
   let inactive_ing_dom = ing_dom(false)
 
 
-
-  let dish_dom = block => {
+  let dish_dom = active => block => {
     let editable = mem(() => {
       if (block.user?.slug == logged_as()) {
         return pencil_icon
@@ -909,7 +923,7 @@ function arena() {
     })
 
     let s = mem(() => selected_block()?.id == block.id)
-    let classes = mem(() => `block dish ${s() ? "selected" : ""}`)
+    let classes = mem(() => `block dish ${s() ? "selected" : ""} ${active ? "active" : ""}`)
 
     return html`
     div [
@@ -922,12 +936,17 @@ function arena() {
     `
   }
 
+  let active_dish_dom = ing_dom(true)
+  let inactive_dish_dom = ing_dom(false)
+
+
   let carrier_bag = mem(() => {
     if (logged_as()) return html`
       h2 -- Dishes
       button [onclick=${add_dish}] -- Add
       .dishes-container
-        each of ${dishes} as ${dish_dom}
+         each of ${active_dish} as ${active_dish_dom}
+         each of ${inactive_dish} as ${inactive_dish_dom}
         
       h2 -- Ingredients
       .ingredients-container
