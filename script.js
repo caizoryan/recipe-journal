@@ -117,6 +117,25 @@ button {
   cursor: pointer;
 }
 
+button:hover {
+  background: #eee;
+}
+
+#editor {
+  position: relative;
+}
+
+.top-right {
+  position: absolute;
+  top: 1em;
+  right: 1em;
+  z-index: 99;
+}
+
+.disabled {
+  opacity: .4;
+}
+
 .block-link {
   cursor : pointer;
   color : blue;
@@ -725,30 +744,26 @@ let inactive_ingredients = mem(() => {
 })
 
 let selected_block = (function() {
-  let s = sig(null)
-  let set = (block) => {
-    if (unsaved() && selected_block()) {
-      shake.set(true)
-    }
-    else s.set(block)
+  let inner = sig(null)
+  function outer() { return inner() }
+
+  outer.set = (block) => {
+    if (unsaved()) shake.set(true)
+    else inner.set(block)
   }
 
-  let unsafe_set = (block) => {
-    s.set(block)
+  outer.unsafe_set = (block) => {
+    inner.set(block)
   }
 
-  function b() { return s() }
-  b.set = set
-  b.unsafe_set = unsafe_set
-
-  return b
+  return outer
 })()
 
 
 let shake = sig(false)
 let current_text = sig("")
 let editable = mem(() => (selected_block()?.user?.slug == logged_as() || !selected_block()))
-let unsaved = mem(() => current_text() != selected_block()?.content)
+let unsaved = mem(() => (current_text() != selected_block()?.content) && selected_block())
 eff_on(unsaved, () => {
   if (shake() && !unsaved()) shake.set(false)
 })
@@ -1240,7 +1255,13 @@ function Editor() {
     })
   })
 
-  return html` #editor -- ${complete.render} `
+  return html` 
+  #editor 
+    div -- ${complete.render} 
+    button [ class=${() => "top-right " + (shake() ? "shaking" : "") + (unsaved() ? "" : "disabled")}
+             onclick=${() => save_block(current_text(), selected_block())} 
+           ] -- ${mem(() => unsaved() ? "save" : "[saved]")} 
+  `
 }
 
 // -------------------------
@@ -1320,6 +1341,10 @@ function createEditor(text, block) {
     }
 
   })
+
+  setTimeout(() => document.querySelector(".ProseMirror").addEventListener("blur", () => {
+    if (unsaved()) save_block(save_block(current_text(), selected_block()))
+  }), 100)
   return v
 }
 
