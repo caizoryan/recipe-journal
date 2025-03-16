@@ -87,12 +87,30 @@ body {
   overflow: hidden;
 }
 
+@keyframes shake {
+  0% { transform: translate(1px, 1px) rotate(0deg); }
+  10% { transform: translate(-1px, -2px) rotate(-1deg); }
+  20% { transform: translate(-3px, 0px) rotate(1deg); }
+  30% { transform: translate(3px, 2px) rotate(0deg); }
+  40% { transform: translate(1px, -1px) rotate(1deg); }
+  50% { transform: translate(-1px, 2px) rotate(-1deg); }
+  60% { transform: translate(-3px, 1px) rotate(0deg); }
+  70% { transform: translate(3px, 1px) rotate(-1deg); }
+  80% { transform: translate(-1px, -1px) rotate(1deg); }
+  90% { transform: translate(1px, 2px) rotate(0deg); }
+  100% { transform: translate(1px, -2px) rotate(-1deg); }
+}
+
+.shaking {
+  animation: shake 0.5s infinite;
+}
+
 input[type="text"], button{
   all: unset;
   background: white;
   border: 1px solid black;
   padding:.3em;
-  margin: .5em;
+  margin: 0 .5em;
 }
 
 button {
@@ -109,7 +127,6 @@ button {
 }
 
 .top-bar {
-  height: 100%;
   padding: 1em;
   display: flex;
   justify-content: space-between;
@@ -246,7 +263,7 @@ button {
 
 .ProseMirror {
   position: relative;
-  padding: 5em;
+  padding: 2em;
 }
 
 .ProseMirror li {
@@ -266,6 +283,12 @@ button {
   word-wrap: break-word;
   white-space: pre-wrap;
   white-space: break-spaces;
+  outline: none;
+}
+
+.ProseMirror-focused {
+  background-color: #aaa1;
+  border: 1px dotted #000b;
 }
 
 .ProseMirror pre { white-space: pre-wrap; }
@@ -306,167 +329,6 @@ img.ProseMirror-separator {
   margin: 0 !important;
 }
 
-
-   /* ----- */
-  /* MENU  */
- /* ----- */
-
-.ProseMirror-textblock-dropdown {
-  min-width: 3em;
-}
-
-.ProseMirror-menu {
-  margin: 0 -4px;
-  line-height: 1;
-}
-
-.ProseMirror-tooltip .ProseMirror-menu {
-  width: -webkit-fit-content;
-  width: fit-content;
-  white-space: pre;
-}
-
-.ProseMirror-menuitem {
-  margin-right: 3px;
-  display: inline-block;
-}
-
-.ProseMirror-menuseparator {
-  border-right: 1px solid #ddd;
-  margin-right: 3px;
-}
-
-.ProseMirror-menu-dropdown, .ProseMirror-menu-dropdown-menu {
-  font-size: 90%;
-  white-space: nowrap;
-}
-
-.ProseMirror-focused {
-  outline: none !important;
-  border: none;
-}
-
-.ProseMirror-menu-dropdown {
-  vertical-align: 1px;
-  cursor: pointer;
-  position: relative;
-  padding-right: 15px;
-}
-
-.ProseMirror-menu-dropdown-wrap {
-  padding: 1px 0 1px 4px;
-  display: inline-block;
-  position: relative;
-}
-
-.ProseMirror-menu-dropdown:after {
-  content: "";
-  border-left: 4px solid transparent;
-  border-right: 4px solid transparent;
-  border-top: 4px solid currentColor;
-  opacity: .6;
-  position: absolute;
-  right: 4px;
-  top: calc(50% - 2px);
-}
-
-.ProseMirror-menu-dropdown-menu, .ProseMirror-menu-submenu {
-  position: absolute;
-  background: white;
-  color: #666;
-  border: 1px solid #aaa;
-  padding: 2px;
-}
-
-.ProseMirror-menu-dropdown-menu {
-  z-index: 15;
-  min-width: 6em;
-}
-
-.ProseMirror-menu-dropdown-item {
-  cursor: pointer;
-  padding: 2px 8px 2px 4px;
-}
-
-.ProseMirror-menu-dropdown-item:hover {
-  background: #f2f2f2;
-}
-
-.ProseMirror-menu-submenu-wrap {
-  position: relative;
-  margin-right: -4px;
-}
-
-.ProseMirror-menu-submenu-label:after {
-  content: "";
-  border-top: 4px solid transparent;
-  border-bottom: 4px solid transparent;
-  border-left: 4px solid currentColor;
-  opacity: .6;
-  position: absolute;
-  right: 4px;
-  top: calc(50% - 4px);
-}
-
-.ProseMirror-menu-submenu {
-  display: none;
-  min-width: 4em;
-  left: 100%;
-  top: -3px;
-}
-
-.ProseMirror-menu-active {
-  background: #eee;
-  border-radius: 4px;
-}
-
-.ProseMirror-menu-disabled {
-  opacity: .3;
-}
-
-.ProseMirror-menu-submenu-wrap:hover .ProseMirror-menu-submenu, .ProseMirror-menu-submenu-wrap-active .ProseMirror-menu-submenu {
-  display: block;
-}
-
-.ProseMirror-menubar-wrapper {
-  height: 100%;
-}
-.ProseMirror-menubar {
-  border-top-left-radius: inherit;
-  border-top-right-radius: inherit;
-  position: relative;
-  min-height: 1em;
-  color: #666;
-  padding: 1px 6px;
-  top: 0; left: 0; right: 0;
-  border-bottom: 1px solid silver;
-  background: white;
-  z-index: 10;
-  -moz-box-sizing: border-box;
-  box-sizing: border-box;
-  overflow: visible;
-}
-
-.ProseMirror-icon {
-  display: inline-block;
-  line-height: .8;
-  vertical-align: -2px; /* Compensate for padding */
-  padding: 2px 8px;
-  cursor: pointer;
-}
-
-.ProseMirror-menu-disabled.ProseMirror-icon {
-  cursor: default;
-}
-
-.ProseMirror-icon svg {
-  fill: currentColor;
-  height: 1em;
-}
-
-.ProseMirror-icon span {
-  vertical-align: text-top;
-}
 
 
 
@@ -549,7 +411,7 @@ const save_block = (content, block) => {
         if (selected_block()?.id == block.id) {
           let updated = contents()
           let this_block = updated.find((b) => b.id == selected_block()?.id)
-          if (this_block) { selected_block.set(this_block) }
+          if (this_block) { selected_block.unsafe_set(this_block) }
         }
       })
   }
@@ -634,7 +496,6 @@ const marks_contain_arena_block = (marks) => {
 }
 
 const process_ingredients = (block) => {
-
   if (!block) return
   if (block.class == "Text" && block.title == "ingredient") {
     let node = markdown.defaultMarkdownParser.parse(block.content)
@@ -810,7 +671,6 @@ eff_on(logged_as, () => {
       .then((res) => {
         if (res.slug) {
           console.log("got channel", res)
-          libary_channel.set(res)
           channels.set([res])
         } else {
           // handle errors
@@ -823,31 +683,8 @@ eff_on(logged_as, () => {
   }
 })
 
-// -------
-//       |
-//       once this gets set
-//.      fetch channels
-//       |
-//       v
-let libary_channel = sig(false)
-//       |
-//       v
-eff_on(libary_channel, () => {
-  if (client && libary_channel()) {
-    libary_channel().contents?.forEach((channel) => {
-      if (channel?.class == "Channel") {
-        client.channel(channel.slug)
-          .get()
-          .then((c) => {
-            channels.set([...channels(), c])
-          })
-      }
-    })
-  }
-})
 
 let channels = sig([])
-let my_channel = mem(() => channels().find(c => c.user.slug == logged_as()))
 let contents = mem(() => channels().map(c => c.contents).flat().filter(e => e != undefined))
 
 
@@ -874,28 +711,47 @@ let connections = mem(() => {
       if (map[block.id]) map[block.id].push(dish)
     })
   })
-  // go through dishes, and pin to ingredients
-  console.log("map", map)
   return map
 })
 
 let active_ingredients = mem(() => {
   let a = ingredients()?.filter((b) => selected_dish_has_me(b))
-  console.log("active", a)
-  if (a) return a
-  else return []
+  return a ? a : []
 })
 
 let inactive_ingredients = mem(() => {
   let a = ingredients()?.filter((b) => !selected_dish_has_me(b))
-  console.log("inactive", a)
-  if (a) return a
-  else return []
+  return a ? a : []
 })
 
-let selected_block = sig(null)
+let selected_block = (function() {
+  let s = sig(null)
+  let set = (block) => {
+    if (unsaved() && selected_block()) {
+      shake.set(true)
+    }
+    else s.set(block)
+  }
+
+  let unsafe_set = (block) => {
+    s.set(block)
+  }
+
+  function b() { return s() }
+  b.set = set
+  b.unsafe_set = unsafe_set
+
+  return b
+})()
+
+
+let shake = sig(false)
 let current_text = sig("")
 let editable = mem(() => (selected_block()?.user?.slug == logged_as() || !selected_block()))
+let unsaved = mem(() => current_text() != selected_block()?.content)
+eff_on(unsaved, () => {
+  if (shake() && !unsaved()) shake.set(false)
+})
 
 
 
@@ -1103,12 +959,14 @@ function arena() {
 
 
 function top_bar() {
-  let unsaved = mem(() => current_text() != selected_block()?.content)
+
   return html`
    .top-bar
      .notify -- !()!
      .info -- [${() => unsaved() ? "unsaved" : "saved"}]
-     button [onclick=${() => save_block(current_text(), selected_block())}] -- (save)
+     button [
+       class=${() => shake() ? "shaking" : ""}
+       onclick=${() => save_block(current_text(), selected_block())} ] -- (save)
   `
 }
 
