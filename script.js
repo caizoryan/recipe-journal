@@ -64,16 +64,24 @@ let default_image = ""
 
 
 let style = sig(`
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
 @import url("https://use.typekit.net/vfz2iav.css");
+
+@font-face {
+  font-family: "velveyne";
+  src: url("./font/Velvelyne-Regular.woff");
+}
 
 *::-webkit-scrollbar {
   display: none;
 }
 
 *{
-  font-family: "JetBrains Mono", monospace;
-  font-family: "platelet", sans-serif;
+  /*font-family: "JetBrains Mono", monospace;*/
+  /*font-family: "platelet", sans-serif;*/
+  /*font-family: "Roboto", sans-serif;*/
+  font-family: "velveyne", sans-serif;
+
   padding: 0;
   margin: 0;
   -ms-overflow-style: none;  /* IE and Edge */
@@ -273,7 +281,6 @@ button:hover {
   margin: .5em;
   padding: 1em;
   position: relative;
-  aspect-ratio: 1/1;
 }
 
 .block:hover {
@@ -743,6 +750,8 @@ let inactive_ingredients = mem(() => {
   return a ? a : []
 })
 
+let compact = sig(false)
+
 let selected_block = (function() {
   let inner = sig(null)
   function outer() { return inner() }
@@ -974,14 +983,11 @@ function arena() {
 
 
 function top_bar() {
-
   return html`
    .top-bar
      .notify -- !()!
-     .info -- [${() => unsaved() ? "unsaved" : "saved"}]
-     button [
-       class=${() => shake() ? "shaking" : ""}
-       onclick=${() => save_block(current_text(), selected_block())} ] -- (save)
+     .settings
+       button [onclick=${() => compact.set(!compact())}] -- compact
   `
 }
 
