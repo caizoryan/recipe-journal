@@ -551,7 +551,7 @@ const process_image_blocks = (block) => {
 
 const fuzzy_match = (str, list) => {
   let is = false
-  list.forEach((fuzz) => str.toLowerCase() == fuzz ?
+  list.forEach((fuzz) => str.toLowerCase().includes(fuzz) ?
     is = true : null
   )
   return is
@@ -588,11 +588,7 @@ const process_dishes = (block) => {
         && child.text
         && child.marks.length > 0
       ) {
-        let block = marks_contain_arena_block(child.marks)
-        if (block) instruction_ingredients.push({
-          node: child,
-          block
-        })
+        let _block = marks_contain_arena_block(child.marks)
       }
 
       if (child.text?.toLowerCase() == "instructions") {
@@ -600,12 +596,26 @@ const process_dishes = (block) => {
         in_inst = true
       }
 
+      let f = false
+      if (child.marks.length > 0 && in_ing) {
+        let _block = marks_contain_arena_block(child.marks)
+        if (_block) {
+          console.log('found without text')
+          f = true
+        }
+
+      }
+
       if (in_ing
         && child.text
         && child.marks.length > 0
       ) {
-        let block = marks_contain_arena_block(child.marks)
-        if (block) ingredients.push(block)
+        let _block = marks_contain_arena_block(child.marks)
+        if (_block) console.log("found in", first_line(block.content), "ingredient: ", first_line(_block.content))
+        if (_block) ingredients.push(_block)
+        if (!_block && f) {
+          console.log("didnt find cuz of text")
+        }
       }
 
       if (is_ingredients_fuzzy(child.text)) {
@@ -754,6 +764,7 @@ let inactive_dish = mem(() => {
 
 let active_ingredients = mem(() => {
   let a = ingredients()?.filter((b) => selected_dish_has_me(b))
+  console.log(a.map((e) => first_line(e.content)))
   return a ? a : []
 })
 
@@ -1370,13 +1381,13 @@ function createEditor(text, block) {
           if (block.image) {
             dom.style.backgroundImage = "url(" + block.image.thumb.url + ")"
           }
+
           else {
             dom.style.backgroundImage = "url(" + default_image + ")"
           }
         }
 
         return { dom }
-
       }
     }
 
