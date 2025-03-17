@@ -433,12 +433,24 @@ const update_channel = (slug) => client
   })
 
 const save_block = (content, block) => {
+  console.log("save called")
   if (block && MAIN_CHANNEL) {
     client.block(block.id).update({ content })
       .then(_ => refresh(MAIN_CHANNEL))
-      .then(_ => update_channel(MAIN_CHANNEL))
-      .then(_ => {
-        // if selected_block = block.id
+      .then(_ => client.block(block.id).get())
+      .then(block => {
+        console.log("updated", block)
+        return block
+      })
+      .then(updated_block => {
+
+        if (updated_block) {
+          let channel_copy = channels()[0]
+          let i = channel_copy.contents.findIndex((b) => b.id == updated_block.id)
+          if (i != -1) { channel_copy.contents.splice(i, 1, updated_block) }
+          channels.set([channel_copy])
+        }
+
         if (selected_block()?.id == block.id) {
           let updated = contents()
           let this_block = updated.find((b) => b.id == selected_block()?.id)
@@ -596,26 +608,12 @@ const process_dishes = (block) => {
         in_inst = true
       }
 
-      let f = false
-      if (child.marks.length > 0 && in_ing) {
-        let _block = marks_contain_arena_block(child.marks)
-        if (_block) {
-          console.log('found without text')
-          f = true
-        }
-
-      }
-
       if (in_ing
         && child.text
         && child.marks.length > 0
       ) {
         let _block = marks_contain_arena_block(child.marks)
-        if (_block) console.log("found in", first_line(block.content), "ingredient: ", first_line(_block.content))
         if (_block) ingredients.push(_block)
-        if (!_block && f) {
-          console.log("didnt find cuz of text")
-        }
       }
 
       if (is_ingredients_fuzzy(child.text)) {
@@ -1074,9 +1072,7 @@ function autocomplete_search() {
 
   const enter = () => {
     let current = filtered()[cursor()]
-    console.log("current", current)
     if (!current) return
-    console.log("view", view_ref)
 
     if (current.content.includes("Add:")) {
       let ingredient = view_ref.state.doc.cut(range_ref.from + 1, range_ref.to).textContent.trim()
@@ -1165,7 +1161,6 @@ function autocomplete_search() {
            div [
              id=${mem(() => "ingredient-" + i())}
              onclick=${() => {
-          console.log("clicked", i())
           cursor.set(i());
           enter()
         }}
