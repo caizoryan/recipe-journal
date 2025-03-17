@@ -476,7 +476,6 @@ const create_dish_block = async () => {
       client.block(block.id).update({ title: "dish" })
     })
     .then((res) => {
-      console.log(res)
       return b
     })
 
@@ -497,7 +496,6 @@ const create_ingredient_block = async (name) => {
       client.block(block.id).update({ title: "ingredient" })
     })
     .then((res) => {
-      console.log(res)
       return b
     })
 }
@@ -701,7 +699,6 @@ eff_on(logged_as, () => {
       .get()
       .then((res) => {
         if (res.slug) {
-          console.log("got channel", res)
           channels.set([res])
         } else {
           // handle errors
@@ -867,7 +864,6 @@ function arena() {
   let logger = mem(() => {
     if (!auth()) {
       return login()
-      console.log("no auth")
     }
     else if (unauthorized()) {
       return html`
@@ -1026,10 +1022,12 @@ function setMarkLink(href, state, dispatch) {
 function autocomplete_search() {
   const filter = sig("")
   const action = sig("ingredients")
-  //const view_ref
   const _show = sig(false)
   const x = sig(0)
   const y = sig(0)
+
+  let view_ref
+  let range_ref
 
 
   const filtered = mem(() =>
@@ -1043,7 +1041,6 @@ function autocomplete_search() {
 
       : image_blocks()
         .filter(e => {
-          console.log("b", e)
           return first_line(e.title).toLowerCase()
             .includes(filter().toLowerCase())
         })
@@ -1064,25 +1061,24 @@ function autocomplete_search() {
       ? cursor.set(cursor() - 1)
       : null
 
-  const enter = (view, range) => {
+  const enter = () => {
     let current = filtered()[cursor()]
+    console.log("current", current)
     if (!current) return
-    console.log(current)
+    console.log("view", view_ref)
 
     if (current.content.includes("Add:")) {
-      console.log("clicked add")
-      let ingredient = view.state.doc.cut(range.from + 1, range.to).textContent.trim()
+      let ingredient = view_ref.state.doc.cut(range_ref.from + 1, range_ref.to).textContent.trim()
       if (ingredient) {
         add_ingredient(ingredient).then((block) => {
           if (!block) {
-            console.log("Block nahi mila...")
             return
           }
           let link = "https://are.na/blocks/" + block.id
-          setMarkLink(link, view.state, view.dispatch)
+          setMarkLink(link, view_ref.state, view_ref.dispatch)
 
           // Todo: replace all #
-          insertText(first_line(block.content).replace("#", "").trim(), range.from, range.to, view.state, view.dispatch)
+          insertText(first_line(block.content).replace("#", "").trim(), range_ref.from, range_ref.to, view_ref.state, view_ref.dispatch)
         })
       }
 
@@ -1096,15 +1092,15 @@ function autocomplete_search() {
       // add ingredient
       // ----------------
       let link = "https://are.na/blocks/" + current.id
-      setMarkLink(link, view.state, view.dispatch)
+      setMarkLink(link, view_ref.state, view_ref.dispatch)
 
       // Todo: replace all #
       if (action() == "ingredients") {
-        insertText(first_line(current.content).replace("#", "").trim(), range.from, range.to, view.state, view.dispatch)
+        insertText(first_line(current.content).replace("#", "").trim(), range_ref.from, range_ref.to, view_ref.state, view_ref.dispatch)
       }
 
       else {
-        insertText("image", range.from, range.to, view.state, view.dispatch)
+        insertText("image", range_ref.from, range_ref.to, view_ref.state, view_ref.dispatch)
       }
     }
   }
@@ -1146,10 +1142,22 @@ function autocomplete_search() {
   const img = (e) => e.image ? html`img.smol [src=${e.image.thumb.url}]` : ""
 
   const render = () => {
+    // scroll into view
+    eff_on(cursor, () => {
+      let current = document.querySelector("#ingredient-" + cursor())
+      if (current) { current.scrollIntoView() }
+    })
+
     return html`
       .ingredient-results [style=${style}]
         each of ${filtered} as ${(e, i) => html`
            div [
+             id=${mem(() => "ingredient-" + i())}
+             onclick=${() => {
+          console.log("clicked", i())
+          cursor.set(i());
+          enter()
+        }}
              class=${mem(() => `line ${i() == cursor() ? "selected-result" : ""}`)}
              style=cursor:pointer;
            ]
@@ -1167,6 +1175,11 @@ function autocomplete_search() {
     cursor_prev,
     enter,
 
+    update_ref: (view, range) => {
+      view_ref = view
+      range_ref = range
+    },
+
     reset: () => {
       filter.set("")
       cursor.set(-1)
@@ -1181,11 +1194,11 @@ function autocomplete_search() {
 }
 
 function handle_ingredient_search(action) {
-  console.log()
   let anchor = document.getElementById("ingredient-search")
   let floating = document.querySelector(".ingredient-results")
 
   if (action.kind == "open") {
+    complete.update_ref(action.view, action.range)
     complete.action(action.type.name)
     compute_position(anchor, floating,
       {
@@ -1209,12 +1222,14 @@ function handle_ingredient_search(action) {
   }
 
   if (action.kind == "filter") {
+    complete.update_ref(action.view, action.range)
     complete.set_filter(action.filter)
     return true
   }
 
   if (action.kind == "enter") {
-    complete.enter(action.view, action.range)
+    complete.update_ref(action.view, action.range)
+    complete.enter()
     complete.reset()
     complete.hide()
     return true
@@ -1368,7 +1383,10 @@ function createEditor(text, block) {
   })
 
   setTimeout(() => document.querySelector(".ProseMirror").addEventListener("blur", () => {
-    if (unsaved()) save_block(save_block(current_text(), selected_block()))
+    if (unsaved() && !complete.showing()) save_block(save_block(current_text(), selected_block()))
+    if (complete.showing()) {
+      setTimeout(() => complete.showing.set(false), 500)
+    }
   }), 100)
   return v
 }
