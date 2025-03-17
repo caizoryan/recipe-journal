@@ -113,6 +113,12 @@ body {
   animation: shake 0.5s infinite;
 }
 
+.little {
+  margin-top: -1em;
+  opacity: .5;
+  font-size: .7em;
+}
+
 input[type="text"], button{
   all: unset;
   background: white;
@@ -250,6 +256,16 @@ button:hover {
 
 .ingredient.active{
   background-color: #F3EAEC; 
+}
+
+.editable {
+  border: 2px dotted #ccc !important;
+  box-shadow: 0 0 5px 2px #8881;
+}
+
+.editable:hover {
+  transition: all 100ms;
+  transform: scale(1.05);
 }
 
 .arena-container h2 {
@@ -903,7 +919,7 @@ function arena() {
       return (selected_block()?.id == block.id)
     })
 
-    let classes = mem(() => `block ingredient ${s() ? "selected" : ""} ${active ? "active" : ""}`)
+    let classes = mem(() => `block ingredient ${s() ? "selected" : ""} ${active ? "active" : ""} ${editable() ? "editable" : ""}`)
 
     return html`
     div [
@@ -924,11 +940,11 @@ function arena() {
     let editable = mem(() => {
       if (block.user?.slug == logged_as()) {
         return pencil_icon
-      }
+      } else return false
     })
 
     let s = mem(() => selected_block()?.id == block.id)
-    let classes = mem(() => `block dish ${s() ? "selected" : ""} ${active ? "active" : ""}`)
+    let classes = mem(() => `block dish ${s() ? "selected" : ""} ${active ? "active" : ""} ${editable() ? "editable" : ""}`)
 
     return html`
     div [
@@ -937,12 +953,14 @@ function arena() {
       style=cursor:pointer ]
       
       p -- ${first_line(block.content)}
-      span.bottom-right -- ${editable}
+      p
+        span.little -- ${editable}
+        span.little -- ${block.user.initials}
     `
   }
 
-  let active_dish_dom = ing_dom(true)
-  let inactive_dish_dom = ing_dom(false)
+  let active_dish_dom = dish_dom(true)
+  let inactive_dish_dom = dish_dom(false)
 
 
   let carrier_bag = mem(() => {
