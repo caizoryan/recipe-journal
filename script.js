@@ -1356,12 +1356,16 @@ function createEditor(text, block) {
       doc: markdown.defaultMarkdownParser.parse(text),
       plugins: [
         ...auto(options),
-        ...exampleSetup.exampleSetup({ schema: markdown.schema, menuBar: false }),
+        ...exampleSetup.exampleSetup({ schema: markdown.schema, menuBar: true }),
         keymap.keymap({
-          "Mod-s": (state) =>
+          "Mod-s": (state) => {
             save_block(
               markdown.defaultMarkdownSerializer.serialize(state.doc),
-              block)
+              block
+            )
+
+            return true
+          }
         })
       ]
     }),
