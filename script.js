@@ -312,6 +312,11 @@ button:hover {
   margin-left: 2.5em;
 }
 
+.ProseMirror img {
+  max-width:90%;
+  max-height:60vh;
+}
+
 .ProseMirror h1,
 .ProseMirror h2,
 .ProseMirror h3,
@@ -848,6 +853,9 @@ eff_on(unsaved, () => {
 // ---------------
 
 import { Arena } from "./lib/arena.js"
+import * as ModelTypes from "./lib/prosemirror/dist/modules/prosemirror-model/dist/index.js"
+import * as StateTypes from "./lib/prosemirror/dist/modules/prosemirror-state/dist/index.js"
+import * as ViewTypes from "./lib/prosemirror/dist/modules/prosemirror-view/dist/index.js"
 const MAIN_CHANNEL = "recipe-journals"
 
 function arena() {
@@ -1040,6 +1048,15 @@ function insertText(text, from, to, state, dispatch) {
   dispatch(state.tr.insertText(text, from, to))
 }
 
+/**
+ * @param {number} from 
+ * @param {ModelTypes.Node} node 
+ * @param {StateTypes.EditorState} state 
+ * */
+function insertNode(from, node, state, dispatch) {
+  dispatch(state.tr.insert(from, node))
+}
+
 function setMarkLink(href, state, dispatch) {
   dispatch(
     state.tr.setStoredMarks([markdown.schema.mark(markdown.schema.marks.link, { href })])
@@ -1057,20 +1074,32 @@ function autocomplete_search() {
   let range_ref
 
 
-  const filtered = mem(() =>
-    action() == "ingredients"
-      ? ingredients()
+  const filtered = mem(() => {
+    if (action() == "ingredients") {
+      return ingredients()
         .filter(e => {
           return first_line(e.content).toLowerCase()
             .includes(filter().toLowerCase())
         })
         .concat([{ content: "Add: " + filter() }])
+    }
 
-      : image_blocks()
+    if (action() == "images") {
+      return image_blocks()
         .filter(e => {
           return first_line(e.title).toLowerCase()
             .includes(filter().toLowerCase())
         })
+    }
+
+    if (action() == "images-node") {
+      return image_blocks()
+        .filter(e => {
+          return first_line(e.title).toLowerCase()
+            .includes(filter().toLowerCase())
+        })
+    }
+  }
   )
 
 
@@ -1099,6 +1128,7 @@ function autocomplete_search() {
           if (!block) {
             return
           }
+
           let link = "https://are.na/blocks/" + block.id
           setMarkLink(link, view_ref.state, view_ref.dispatch)
 
@@ -1124,9 +1154,26 @@ function autocomplete_search() {
         insertText(first_line(current.content).replace("#", "").trim(), range_ref.from, range_ref.to, view_ref.state, view_ref.dispatch)
       }
 
+      else if (action() == "images-node") {
+        //try to get current.id img
+        let img_block = contents().find((e) => e.id == current.id)
+        if (!img_block) return false
+
+        let image = img_block.image
+        console.log(image)
+
+        if (image) link = image.display.url
+
+        insertText("", range_ref.from, range_ref.to, view_ref.state, view_ref.dispatch)
+        insertNode(range_ref.from, markdown.schema.node("image", { src: link }), view_ref.state, view_ref.dispatch)
+
+      }
+
       else {
         insertText("image", range_ref.from, range_ref.to, view_ref.state, view_ref.dispatch)
       }
+
+
     }
   }
 
@@ -1339,6 +1386,11 @@ function createEditor(text, block) {
     reducer: handle_ingredient_search,
     triggers: [
       {
+        name: 'images-node',
+        trigger: 'img:',
+        decorationAttrs: { id: 'ingredient-search' }
+      },
+      {
         name: 'images',
         trigger: '@',
         decorationAttrs: { id: 'ingredient-search' }
@@ -1356,7 +1408,7 @@ function createEditor(text, block) {
       doc: markdown.defaultMarkdownParser.parse(text),
       plugins: [
         ...auto(options),
-        ...exampleSetup.exampleSetup({ schema: markdown.schema, menuBar: true }),
+        ...exampleSetup.exampleSetup({ schema: markdown.schema, menuBar: false }),
         keymap.keymap({
           "Mod-s": (state) => {
             save_block(
