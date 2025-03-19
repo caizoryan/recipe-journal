@@ -1099,6 +1099,14 @@ function autocomplete_search() {
             .includes(filter().toLowerCase())
         })
     }
+
+    if (action() == "command") {
+      return [{ content: "image" }, { content: "image-node" }, { content: "ingredient" }]
+        .filter(e => {
+          console.log(e.content.includes(filter().toLowerCase()))
+          return e.content.includes(filter().toLowerCase())
+        })
+    }
   }
   )
 
@@ -1169,6 +1177,13 @@ function autocomplete_search() {
 
       }
 
+      else if (action() == "command") {
+        if (current.content == "image-node") {
+          setTimeout(() => insertText("img:", range_ref.from, range_ref.to, view_ref.state, view_ref.dispatch), 100)
+          return true
+        }
+      }
+
       else {
         insertText("image", range_ref.from, range_ref.to, view_ref.state, view_ref.dispatch)
       }
@@ -1207,9 +1222,9 @@ function autocomplete_search() {
     if (pos.y) y.set(pos.y)
   }
 
-  const line = (e) => action() == "ingredients"
-    ? first_line(e.content).replace("#", " ")
-    : e.title
+  const line = (e) => action().includes("images")
+    ? e.title
+    : first_line(e.content).replace("#", " ")
 
   const img = (e) => e.image ? html`img.smol [src=${e.image.thumb.url}]` : ""
 
@@ -1385,6 +1400,11 @@ function createEditor(text, block) {
   const options = {
     reducer: handle_ingredient_search,
     triggers: [
+      {
+        name: 'command',
+        trigger: 'cmd:',
+        decorationAttrs: { id: 'ingredient-search' }
+      },
       {
         name: 'images-node',
         trigger: 'img:',
