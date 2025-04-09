@@ -30,39 +30,6 @@ let pencil = `
 let default_image = ""
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 let style = sig(`
 @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
 @import url("https://use.typekit.net/vfz2iav.css");
@@ -173,6 +140,7 @@ button:hover {
   padding: 1em;
   grid-gap: 1em;
   overflow: hidden;
+  grid-template-columns: 1fr;
   height: 100vh;
 }
 
@@ -648,49 +616,7 @@ const process_dishes = (block) => {
   }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 let client
-
 // check if logged in
 
 // fetch kitchen channel
@@ -818,34 +744,6 @@ let unsaved = mem(() => (current_text() != selected_block()?.content) && selecte
 eff_on(unsaved, () => {
   if (shake() && !unsaved()) shake.set(false)
 })
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 // ---------------
@@ -996,42 +894,6 @@ function arena() {
   `
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 function top_bar() {
   return html`
    .top-bar
@@ -1040,8 +902,6 @@ function top_bar() {
        button [onclick=${() => compact.set(!compact())}] -- compact
   `
 }
-
-
 
 
 function insertText(text, from, to, state, dispatch) {
@@ -1097,14 +957,6 @@ function autocomplete_search() {
         .filter(e => {
           return first_line(e.title).toLowerCase()
             .includes(filter().toLowerCase())
-        })
-    }
-
-    if (action() == "command") {
-      return [{ content: "image" }, { content: "image-node" }, { content: "ingredient" }]
-        .filter(e => {
-          console.log(e.content.includes(filter().toLowerCase()))
-          return e.content.includes(filter().toLowerCase())
         })
     }
   }
@@ -1177,12 +1029,6 @@ function autocomplete_search() {
 
       }
 
-      else if (action() == "command") {
-        if (current.content == "image-node") {
-          setTimeout(() => insertText("img:", range_ref.from, range_ref.to, view_ref.state, view_ref.dispatch), 100)
-          return true
-        }
-      }
 
       else {
         insertText("image", range_ref.from, range_ref.to, view_ref.state, view_ref.dispatch)
@@ -1286,11 +1132,11 @@ function handle_ingredient_search(action) {
   if (action.kind == "open") {
     complete.update_ref(action.view, action.range)
     complete.action(action.type.name)
-    compute_position(anchor, floating,
-      {
-        strategy: "fixed",
-        placement: 'bottom-end',
-      }
+    // TODO: Just write this urself, fuck this library
+    compute_position(anchor, floating, {
+      strategy: "fixed",
+      placement: 'bottom-end',
+    }
     ).then(({ x, y }) => {
       complete.set_position({ x, y })
     })
@@ -1338,38 +1184,6 @@ let complete = autocomplete_search()
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 function Editor() {
   mounted(() => {
     let v = createEditor("")
@@ -1400,11 +1214,6 @@ function createEditor(text, block) {
   const options = {
     reducer: handle_ingredient_search,
     triggers: [
-      {
-        name: 'command',
-        trigger: 'cmd:',
-        decorationAttrs: { id: 'ingredient-search' }
-      },
       {
         name: 'images-node',
         trigger: 'img:',
@@ -1493,17 +1302,6 @@ function createEditor(text, block) {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 const Root = () => {
   return html`
   style -- ${style}
@@ -1516,35 +1314,4 @@ const Root = () => {
 }
 
 render(Root, document.body)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
